@@ -1,0 +1,68 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual environments
+venv/
+ENV/
+env/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# Operating system files
+.DS_Store
+Thumbs.db
+
+# Large data files (avoid uploading to GitHub)
+COCO_2014/
+data/
+datasets/
+*.pt
+*.pth
+*.bin
+*.onnx
+
+# Model checkpoints (too large)
+checkpoints/
+pretrained/
+
+# Logs and intermediate results (optional to upload)
+log/*.log
+experiments/optr_validation/intermediate/
+
+# Cache files
+chair.pkl
+*.cache
+
+# Backup files
+*.backup
+*.bak
+
+# Temporary test data (generated, not needed in repo)
+test_data_coco/
