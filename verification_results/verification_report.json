@@ -1,0 +1,31 @@
+{
+  "timestamp": "2026-05-07T15:37:36.330976",
+  "environment": {
+    "python": "3.14.4 (main, Apr  7 2026, 13:13:20) [Clang 21.0.0 (clang-2100.0.123.102)]",
+    "pytorch": "2.11.0",
+    "cuda": false,
+    "transformers": "5.8.0",
+    "numpy": "2.4.4",
+    "pillow": "OK",
+    "matplotlib": "3.10.9",
+    "scipy": "1.17.1"
+  },
+  "model_loading": {
+    "config": "loaded",
+    "tokenizer": "Error parsing line b'\\x0e' in /Users/seyonmacbook/Desktop/电子书/paper复现/OPERA/OPERA/checkpoints/tokenizer.model"
+  },
+  "attention_visualization": {
+    "visualization": "/Users/seyonmacbook/Desktop/电子书/paper复现/OPERA/OPERA/verification_results/attention_visualization.png",
+    "status": "success",
+    "pattern_detected": false,
+    "intensity": 1.0399857314258136
+  },
+  "chair_metrics": {
+    "status": "success",
+    "avg_chair_s": 0.08333333333333333,
+    "avg_chair_i": 0.027777777777777776,
+    "samples_count": 12,
+    "results_file": "/Users/seyonmacbook/Desktop/电子书/paper复现/OPERA/OPERA/verification_results/chair_detailed_results.json"
+  },
+  "final_verdict": "PASSED_WITH_NOTES"
+}

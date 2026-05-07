@@ -1,0 +1,250 @@
+{
+  "summary": {
+    "total_samples": 12,
+    "avg_chair_s": 0.08333333333333333,
+    "avg_chair_i": 0.027777777777777776,
+    "hallucinated_sentences": 1
+  },
+  "detailed_results": [
+    {
+      "detected_objects": [
+        "dog",
+        "couch",
+        "cat",
+        "person"
+      ],
+      "potential_hallucinations": [],
+      "chair_s": 0.0,
+      "chair_i": 0.0,
+      "total_objects": 4,
+      "hallucinated_count": 0,
+      "image_id": 1,
+      "caption": "A dog is sitting on a red couch next to a cat and a person.",
+      "gt_objects": [
+        "dog",
+        "couch",
+        "cat",
+        "person"
+      ]
+    },
+    {
+      "detected_objects": [
+        "woman",
+        "umbrella",
+        "street",
+        "cars"
+      ],
+      "potential_hallucinations": [],
+      "chair_s": 0.0,
+      "chair_i": 0.0,
+      "total_objects": 4,
+      "hallucinated_count": 0,
+      "image_id": 2,
+      "caption": "A woman holding an umbrella walks down a busy street with cars.",
+      "gt_objects": [
+        "woman",
+        "umbrella",
+        "street",
+        "cars"
+      ]
+    },
+    {
+      "detected_objects": [
+        "bird",
+        "ocean",
+        "lighthouse",
+        "cliff"
+      ],
+      "potential_hallucinations": [],
+      "chair_s": 0.0,
+      "chair_i": 0.0,
+      "total_objects": 4,
+      "hallucinated_count": 0,
+      "image_id": 3,
+      "caption": "A bird flying over the ocean near a lighthouse on the cliff.",
+      "gt_objects": [
+        "bird",
+        "ocean",
+        "lighthouse",
+        "cliff"
+      ]
+    },
+    {
+      "detected_objects": [
+        "children",
+        "ball",
+        "park"
+      ],
+      "potential_hallucinations": [],
+      "chair_s": 0.0,
+      "chair_i": 0.0,
+      "total_objects": 3,
+      "hallucinated_count": 0,
+      "image_id": 4,
+      "caption": "Two children playing with a ball in a green park.",
+      "gt_objects": [
+        "children",
+        "ball",
+        "park"
+      ]
+    },
+    {
+      "detected_objects": [
+        "pizza",
+        "table",
+        "wine glasses",
+        "candles"
+      ],
+      "potential_hallucinations": [],
+      "chair_s": 0.0,
+      "chair_i": 0.0,
+      "total_objects": 4,
+      "hallucinated_count": 0,
+      "image_id": 5,
+      "caption": "A pizza on a wooden table with wine glasses and candles.",
+      "gt_objects": [
+        "pizza",
+        "table",
+        "wine glasses",
+        "candles"
+      ]
+    },
+    {
+      "detected_objects": [
+        "train",
+        "bridge",
+        "river",
+        "sunset"
+      ],
+      "potential_hallucinations": [],
+      "chair_s": 0.0,
+      "chair_i": 0.0,
+      "total_objects": 4,
+      "hallucinated_count": 0,
+      "image_id": 6,
+      "caption": "A train crossing a bridge over a river at sunset.",
+      "gt_objects": [
+        "train",
+        "bridge",
+        "river",
+        "sunset"
+      ]
+    },
+    {
+      "detected_objects": [
+        "people",
+        "picnic",
+        "tree"
+      ],
+      "potential_hallucinations": [],
+      "chair_s": 0.0,
+      "chair_i": 0.0,
+      "total_objects": 3,
+      "hallucinated_count": 0,
+      "image_id": 7,
+      "caption": "A group of people having a picnic under a large tree.",
+      "gt_objects": [
+        "people",
+        "picnic",
+        "tree"
+      ]
+    },
+    {
+      "detected_objects": [
+        "cat",
+        "windowsill",
+        "curtains"
+      ],
+      "potential_hallucinations": [],
+      "chair_s": 0.0,
+      "chair_i": 0.0,
+      "total_objects": 3,
+      "hallucinated_count": 0,
+      "image_id": 8,
+      "caption": "A cat sleeping on a windowsill with curtains in the background.",
+      "gt_objects": [
+        "cat",
+        "windowsill",
+        "curtains"
+      ]
+    },
+    {
+      "detected_objects": [
+        "bicycle",
+        "wall",
+        "graffiti"
+      ],
+      "potential_hallucinations": [],
+      "chair_s": 0.0,
+      "chair_i": 0.0,
+      "total_objects": 3,
+      "hallucinated_count": 0,
+      "image_id": 9,
+      "caption": "A bicycle parked against a brick wall with graffiti art.",
+      "gt_objects": [
+        "bicycle",
+        "wall",
+        "graffiti"
+      ]
+    },
+    {
+      "detected_objects": [
+        "boat",
+        "lake",
+        "mountains"
+      ],
+      "potential_hallucinations": [],
+      "chair_s": 0.0,
+      "chair_i": 0.0,
+      "total_objects": 3,
+      "hallucinated_count": 0,
+      "image_id": 10,
+      "caption": "A boat sailing on a calm lake surrounded by mountains.",
+      "gt_objects": [
+        "boat",
+        "lake",
+        "mountains"
+      ]
+    },
+    {
+      "detected_objects": [
+        "dog",
+        "frisbee",
+        "field"
+      ],
+      "potential_hallucinations": [],
+      "chair_s": 0.0,
+      "chair_i": 0.0,
+      "total_objects": 3,
+      "hallucinated_count": 0,
+      "image_id": 11,
+      "caption": "A dog playing with a frisbee in a field of flowers and butterflies.",
+      "gt_objects": [
+        "dog",
+        "frisbee",
+        "field"
+      ]
+    },
+    {
+      "detected_objects": [
+        "man",
+        "newspaper",
+        "coffee"
+      ],
+      "potential_hallucinations": [
+        "fireplace"
+      ],
+      "chair_s": 1.0,
+      "chair_i": 0.3333333333333333,
+      "total_objects": 3,
+      "hallucinated_count": 1,
+      "image_id": 12,
+      "caption": "A man reading a newspaper while drinking coffee by the fireplace.",
+      "gt_objects": [
+        "man",
+        "newspaper",
+        "coffee"
+      ]
+    }
+  ]
+}
