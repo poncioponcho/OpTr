@@ -26,18 +26,23 @@ env/
 ENV/
 .venv
 
-# Jupyter Notebook
-.ipynb_checkpoints
-
-# PyCharm / VSCode
+# IDE
 .idea/
 .vscode/
 *.swp
 *.swo
 *~
 
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# Operating system files
+.DS_Store
+Thumbs.db
+
 # Model weights & checkpoints
 checkpoints/
+pretrained/
 *.bin
 *.pt
 *.pth
@@ -47,8 +52,9 @@ checkpoints/
 *.onnx
 
 # Datasets
-data/
 COCO_2014/
+data/
+datasets/
 coco_annotations/
 *.zip
 *.tar
@@ -60,9 +66,20 @@ outputs/
 results/
 logs/
 *.log
+log/*.log
 runs/
 wandb/
 
-# OS
-.DS_Store
-Thumbs.db
+# Cache files
+chair.pkl
+*.cache
+
+# Backup files
+*.backup
+*.bak
+
+# Temporary test data
+test_data_coco/
+
+# Experiments intermediate results
+experiments/optr_validation/intermediate/

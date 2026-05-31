@@ -76,7 +76,7 @@ parser.add_argument(
     "in xxx=yyy format will be merged into config file (deprecate), "
     "change to --cfg-options instead.",
 )
-parser.add_argument("--data_path", type=str, default="COCO_2014/val2014/", help="data path")
+parser.add_argument("--data_path", type=str, default="./test_data_coco/val2014/", help="data path")
 parser.add_argument("--batch_size", type=int, default=1, help="batch size")
 parser.add_argument("--num_workers", type=int, default=2, help="num workers")
 
@@ -86,6 +86,15 @@ parser.add_argument("--scale_factor", type=float, default=50)
 parser.add_argument("--threshold", type=int, default=15)
 parser.add_argument("--num_attn_candidates", type=int, default=5)
 parser.add_argument("--penalty_weights", type=float, default=1.0)
+
+# OP-TR 新增参数
+parser.add_argument("--alpha_d", type=float, default=1.0, help="OP-TR distance scaling exponent")
+parser.add_argument("--d_0", type=int, default=7, help="OP-TR distance threshold")
+parser.add_argument("--c_", type=float, default=-2.9957, help="OP-TR penalty coefficient (log(0.05))")
+parser.add_argument("--Reward", type=float, default=1.6094, help="OP-TR reward pool (log(5))")
+parser.add_argument("--use_optr", action='store_true', help="Use OP-TR instead of OPERA")
+parser.add_argument("--output_file", type=str, default=None, help="Custom output file path")
+
 args = parser.parse_known_args()[0]
 
 
@@ -169,22 +178,48 @@ for img_id in tqdm(range(len(img_files))):
     
     with torch.inference_mode():
         with torch.no_grad():
-            out = model.generate(
-                {"image": norm(image), "prompt":qu}, 
-                use_nucleus_sampling=args.sample, 
-                num_beams=args.beam,
-                max_new_tokens=512,
-                output_attentions=True,
-                opera_decoding=True,
-                scale_factor=args.scale_factor,
-                threshold=args.threshold,
-                num_attn_candidates=args.num_attn_candidates,
-                penalty_weights=args.penalty_weights,
-            )
+            # 构建生成参数
+            gen_kwargs = {
+                "image": norm(image),
+                "prompt": qu,
+                "use_nucleus_sampling": args.sample,
+                "num_beams": args.beam,
+                "max_new_tokens": 512,
+                "output_attentions": True,
+                "opera_decoding": True,
+                "scale_factor": args.scale_factor,
+                "threshold": args.threshold,
+                "num_attn_candidates": args.num_attn_candidates,
+                "penalty_weights": args.penalty_weights,
+            }
+            
+            # 如果使用 OP-TR，添加新参数
+            if args.use_optr:
+                gen_kwargs.update({
+                    "use_optr": True,
+                    "alpha_d": args.alpha_d,
+                    "d_0": args.d_0,
+                    "c_": args.c_,
+                    "Reward": args.Reward,
+                })
+            
+            out = model.generate(gen_kwargs)
     img_save["caption"] = out[0]
 
+    # 生成输出文件名
+    if args.use_optr:
+        output_filename = f'optr-a{args.alpha_d}-d0{args.d_0}-c{args.c_:.4f}-R{args.Reward:.4f}.jsonl'
+    else:
+        output_filename = f'ours-s_{args.scale_factor}-t_{args.threshold}-num_can_{args.num_attn_candidates}-p_{args.penalty_weights}.jsonl'
+    
+    # 如果指定了自定义输出文件路径
+    if args.output_file:
+        output_path = args.output_file
+    else:
+        output_path = os.path.join(base_dir, output_filename)
+
     # dump metric file
-    with open(os.path.join(base_dir, 'ours-s_{}-t_{}-num_can_{}-p_{}.jsonl'.format(args.scale_factor, args.threshold, args.num_attn_candidates, args.penalty_weights)), "a") as f:
+    with open(output_path, "a") as f:
         json.dump(img_save, f)
         f.write('\n')
     

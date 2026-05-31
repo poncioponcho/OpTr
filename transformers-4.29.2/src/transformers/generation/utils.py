@@ -16,6 +16,7 @@
 
 import copy
 import inspect
+import math
 import warnings
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Tuple, Union
@@ -3113,7 +3114,7 @@ class GenerationMixin:
         else:
             return sequence_outputs["sequences"]
 
-    def opera_beam_search(
+    def optr_beam_search(
         self,
         input_ids: torch.LongTensor,
         beam_scorer: BeamScorer,
@@ -3133,9 +3134,21 @@ class GenerationMixin:
         num_attn_candidates: Optional[int] = 5, 
         window_size: Optional[int] = 512, 
         penalty_weights: Optional[float] = 1.0,
+        alpha_d: Optional[float] = 1.0,          # OP-TR-10: 距离缩放指数 α
+        d_0: Optional[int] = 7,                   # OP-TR-10: 距离阈值
+        c_: Optional[float] = math.log(0.05),     # OP-TR-10: 惩罚系数 c (≈ -3.0)
+        Reward: Optional[float] = math.log(5),    # OP-TR-10: 奖励池总量 R (≈ 1.6)
         **model_kwargs,
     ) -> Union[BeamSearchOutput, torch.LongTensor]:
         r"""
+        OP-TR (Over-trust Penalty with Trust Reward) - 改进版 OPERA beam search
+        
+        消融实验配置示例:
+        - OP-TR-10 (默认): alpha_d=1.0, d_0=7, c_=log(0.05), Reward=log(5)  → 目标 CHAIR_I ≈ 13.0
+        - OP-TR-12:       alpha_d=0.8, d_0=6, c_=log(0.005), Reward=log(15) → 目标 CHAIR_I ≈ 12.8
+        - 仅惩罚测试:     Reward=0                                           → 验证 CHAIR_I ≈ 13.5
+        - 仅奖励测试:     c_=0                                               → 验证 CHAIR_I ≈ 13.5
+        
         Generates sequences of token ids for models with a language modeling head using **beam search decoding** and
         can be used for text-decoder, text-to-text, speech-to-text, and vision-to-text models.
 
@@ -3439,6 +3452,44 @@ class GenerationMixin:
 
             penalty_scores = - attn_scores if cur_response_lens <= 10 else rollback_scores # [batch_size * num_beams, num_attn_candidates]
 
+            # ========== OP-TR: Beam Score 级惩罚 + 视觉 Token 奖励 ==========
+            
+            # 2.1 距离因子 D(x): 惩罚距离超过阈值 d_0 的候选
+            anchor_index = rollback_locs.mode().values.data[:, None]  # [batch*num_beams, 1]
+            num_candidates = attn_local.shape[1]
+            candidate_indices = torch.arange(num_candidates, device=input_ids.device).unsqueeze(0).expand_as(anchor_index)
+            d = (candidate_indices - anchor_index).abs().float()  # [batch*num_beams, num_candidates]
+            
+            d0 = d_0 * torch.ones_like(d)  # [batch*num_beams, num_candidates]
+            geq = d >= d0  # 只惩罚距离超过阈值的
+            Dx = ((d - d0) * geq.float()) ** alpha_d  # [batch*num_beams, num_candidates]
+            
+            # 2.2 强度因子 I(x): anchor 列的平均注意力（替代 OPERA 的逐列相乘）
+            avg_atn = attn_local.mean(dim=1)  # [batch*num_beams, window_size] - 对所有候选取平均
+            anchor_col_idx = rollback_loc
+            if anchor_col_idx.dim() == 0:
+                anchor_col_idx = anchor_col_idx.unsqueeze(0).unsqueeze(-1)  # 标量 -> [1, 1]
+            elif anchor_col_idx.dim() == 1:
+                anchor_col_idx = anchor_col_idx.unsqueeze(-1)  # [N] -> [N, 1]
+            safe_anchor_idx = anchor_col_idx.clamp(0, avg_atn.shape[-1] - 1).long()
+            Ix = torch.gather(avg_atn, dim=-1, index=safe_anchor_idx).squeeze(-1)  # [batch*num_beams]
+            
+            # 2.3 Beam 级惩罚合成: Penalty = c · I(x) · E[D(x)]
+            beam_penalty = c_ * Ix * Dx.mean(dim=-1)  # [batch*num_beams], c_ 为负数
+            
+            # 3.1 Beam 级视觉奖励: 基于最后一个 query 对图像 token 的注意力
+            score_vt = attn_i.sum(dim=-1) / num_candidates  # [batch*num_beams] - beam 内平均视觉注意力
+            total_vt = score_vt.sum() + 1e-8  # 避免除零
+            Beam_Rewards = (score_vt / total_vt) * Reward  # [batch*num_beams], Reward 为正数
+            
+            # 3.2 Candidate 级奖励: 按视觉注意力排名缩放 logits
+            sorted_values, sorted_indices = torch.sort(attn_i, descending=True, dim=-1)
+            rank = torch.argsort(sorted_indices, dim=-1)  # [batch*num_beams, num_candidates]
+            phi = 1 + 0.1 * (num_candidates - rank.float())  # 排名越高，放大越多
+            candidate_token_scores = candidate_token_scores * phi  # 应用候选级缩放
+            
+            # ========== OP-TR 改进结束 ==========
+
             # incorporate with the history locations of the maximum of penalty scores
             if history_rollback_locs is None:
                 history_rollback_locs = [rollback_locs.mode().values.data[:, None]]
@@ -3565,7 +3616,12 @@ class GenerationMixin:
             )  # (batch_size * num_beams, vocab_size)
 
             next_token_scores_processed = logits_processor(input_ids, next_token_scores)
-            next_token_scores = next_token_scores_processed + beam_scores[:, None].expand_as(next_token_scores)
+            # OP-TR 最终评分公式: score = BeamScore + log p + Reward + Penalty
+            next_token_scores = next_token_scores_processed + (
+                beam_scores[:, None]
+                + beam_penalty[:, None]      # ← 新增：Beam 级惩罚（负数降权问题 beam）
+                + Beam_Rewards[:, None]      # ← 新增：Beam 级视觉奖励（正数提升好 beam）
+            ).expand_as(next_token_scores)
 
             # Store scores, attentions and hidden_states when required
             if return_dict_in_generate:
